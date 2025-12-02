@@ -1,0 +1,12 @@
+{
+  "name": "docker-html-app",
+  "version": "1.0.0",
+  "description": "Servidor simples para HTML com Express e Docker",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
