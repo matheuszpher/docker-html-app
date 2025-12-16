@@ -1,0 +1,50 @@
+name: CI - Docker Compose and Tests
+
+on:
+  push:
+    branches:
+      - main
+      - atvd-back-front
+  pull_request:
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Build and start containers
+        run: docker compose up -d --build
+
+      - name: Wait for backend
+        run: |
+          for i in {1..30}; do
+            if curl -s http://localhost:3000/ > /dev/null; then
+              echo "Backend is up"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Backend did not start"
+          exit 1
+
+      - name: Run backend tests
+        working-directory: backend
+        run: |
+          npm ci
+          npm test
+
+      - name: Docker logs (if failure)
+        if: failure()
+        run: docker compose logs --no-color
+
+      - name: Shutdown containers
+        if: always()
+        run: docker compose down
